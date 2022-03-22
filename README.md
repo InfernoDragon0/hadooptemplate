@@ -8,6 +8,9 @@ hadoop template for test run hadoop 2.6.0
 - Edit Environment Variables > User Variables
 - HADOOP_HOME = (example) F:\hadoop-2.6.0
 - JAVA_HOME = (example) F:\Java\jdk1.8.0_144
+
+![environment](https://i.imgur.com/xRJNpFM.png)
+
 - Clone this https://github.com/steveloughran/winutils
 - Unzip and put everything from the cloned hadoop-2.6.0/bin into your own hadoop folder (example) F:\hadoop-2.6.0\bin
 - Clone this project
