@@ -11,6 +11,7 @@ hadoop template for test run hadoop 2.6.0
 
 ![environment](https://i.imgur.com/xRJNpFM.png)
 
+- Add %HADOOP_HOME%\bin to your PATH as well
 - Clone this https://github.com/steveloughran/winutils
 - Unzip and put everything from the cloned hadoop-2.6.0/bin into your own hadoop folder (example) F:\hadoop-2.6.0\bin
 - Clone this project
