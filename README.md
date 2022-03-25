@@ -26,5 +26,5 @@ hadoop template for test run hadoop 2.6.0 (For IntelliJ)
 - Directory for META-INF change to src/main/resources instead of src/main/java
 - Apply, and OK to close
 - Build > Build Artifacts > Build/Rebuild
-- Run the jar file via "hadoop jar 'pathtoyourjar.jar'
+- Run the jar file via "hadoop jar 'pathtoyourjar.jar'" (Note: you do not -put the jar file into hadoop, just run it straight from local)
 - **if there is an issue regarding license, open the jar file and delete META-INF/license folder**
