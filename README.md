@@ -1,5 +1,5 @@
 # hadooptemplate
-hadoop template for test run hadoop 2.6.0
+hadoop template for test run hadoop 2.6.0 (For IntelliJ)
 
 # Running on Windows 10/11
 - Download Java JDK 1.8 or equivalent
