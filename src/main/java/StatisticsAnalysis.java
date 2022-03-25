@@ -15,7 +15,7 @@ public class StatisticsAnalysis {
 
         Configuration conf = new Configuration();
         //conf.set("fs.hdfs.impl", org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
-        conf.set("fs.yarn.impl", org.apache.hadoop.fs.LocalFileSystem.class.getName());
+        //conf.set("fs.file.impl", org.apache.hadoop.fs.LocalFileSystem.class.getName());
         Job job = Job.getInstance(conf, "StatisticsAnalysis");
 
         job.setJarByClass(StatisticsAnalysis.class);
