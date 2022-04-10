@@ -107,15 +107,15 @@ public class WordCount {
         instances.addThruPipe(new CsvIterator(fileReader, Pattern.compile("^(\\S*)[\\s,]*(\\S*)[\\s,]*(.*)$"),
                 3, 2, 1)); // data, label, name fields
 
-        int numTopics = 50;
+        int numTopics = 30;
         ParallelTopicModel model = new ParallelTopicModel(numTopics, 1.0, 0.01);
 
         model.addInstances(instances);
 
         // Use two parallel samplers, which each look at one half the corpus and combine
         //  statistics after every iteration.
-        model.setNumThreads(2);
-        model.setNumIterations(500);
+        model.setNumThreads(16);
+        model.setNumIterations(1000);
         model.estimate();
 
 
