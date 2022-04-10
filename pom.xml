@@ -6,7 +6,16 @@
 
     <groupId>org.example</groupId>
     <artifactId>WordCount</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version><build><plugins>
+    <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+            <source>5</source>
+            <target>5</target>
+        </configuration>
+    </plugin>
+</plugins></build>
 
     <repositories>
         <repository>
@@ -26,5 +35,11 @@
             <artifactId>hadoop-common</artifactId>
             <version>2.6.0</version>
         </dependency>
+        <dependency>
+            <groupId>cc.mallet</groupId>
+            <artifactId>mallet</artifactId>
+            <version>2.0.8</version>
+        </dependency>
+
     </dependencies>
 </project>

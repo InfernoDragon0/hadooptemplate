@@ -11,6 +11,8 @@ public class WordExtractorMapper extends Mapper<LongWritable, Text, Text, LongWr
      * AND SHORTER THAN 20, AND ALSO ONLY ALPHABETICAL
      * AND ALSO STOPWORD REMOVAL
      * AND ALSO DICTIONARY CHECKING
+     *
+     * emits the entire sequence of words again for saving and reducing for wordcount
      * @param key
      * @param value
      * @param context
@@ -19,7 +21,7 @@ public class WordExtractorMapper extends Mapper<LongWritable, Text, Text, LongWr
      */
     @Override
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-        System.out.println("key is " + value.toString());
+        //System.out.println("key is " + value.toString());
         StringTokenizer itr = new StringTokenizer(value.toString());
         LongWritable one = new LongWritable(1);
         Text word = new Text();
@@ -28,40 +30,37 @@ public class WordExtractorMapper extends Mapper<LongWritable, Text, Text, LongWr
         while(itr.hasMoreTokens()) {
             //w < w.replaceAll(“[^A-Za-z]+$”, “”).trim();
             String w = itr.nextToken().toLowerCase();
-            w = w.replaceAll("[^A-Za-z]+$", "").trim();
+            w = w.replaceAll("[^A-Za-z\\s]", "").trim();
 
             //if (w.length() < 4 || w.length() > 20)
             if (w.length() < 4 || w.length() > 20) {
                 //w < w.replaceAll(w, “”).replaceAll(“\\s”+ “ ”).trim();
-                w = w.replaceAll(w, "").replaceAll("\\s", " ").trim();
+                //w = w.replaceAll(w, "").replaceAll("\\s", " ").trim();
+                continue;
             }
 
             //stopword
-            if (!WordCount.stopwords.contains(w)) {
-                //dict check
-                if (WordCount.dict.contains(w)) {
-                    word.set(w);
-                    if (w.length() > 0) {
-                        document.add(w);
-                        int whichTopic = new Random().nextInt(5);
-                            //place topics in memory as well
-                        if (WordCount.topics.containsKey(whichTopic)) {
-                            if (!WordCount.topics.get(whichTopic).contains(w)) {
-                                WordCount.topics.get(whichTopic).add(w);
-                            }
-                        }
-                        else {
-                            List<String> l = new ArrayList<String>();
-                            l.add(w);
-                            WordCount.topics.put(whichTopic, l);
-                        }
-
-                    }
-                    context.write(word, one); //corpus is now complete
-                }
+            if (WordCount.stopwords.contains(w)) {
+                continue;
             }
+
+            if (!WordCount.dict.contains(w)) {
+                continue;
+            }
+            document.add(w);
+
+
         }
 
+        if (document.size() > 0) {
+            StringBuilder xappended = new StringBuilder();
+            for (String x : document) {
+                xappended.append(x).append(" ");
+            }
+            word.set(xappended.toString().trim());
+            WordCount.docs.add(xappended.toString().trim());
+        }
+        context.write(word, one);
         //go through each document and create topic
 
 
@@ -72,18 +71,33 @@ public class WordExtractorMapper extends Mapper<LongWritable, Text, Text, LongWr
         //            theTopic.add(w);
 
 
-        System.out.println(Arrays.toString(document.toArray()));
-        WordCount.documents.add(document);
+        //System.out.println(Arrays.toString(document.toArray()));
 
-        System.out.println(WordCount.topics.size());
-        for (Map.Entry<Integer, List<String>> entrySet : WordCount.topics.entrySet()) {
-            System.out.println("Topic " + entrySet.getKey() + ": "  + Arrays.toString(entrySet.getValue().toArray()));
-        }
+//        System.out.println(WordCount.topics.size());
+//        for (Map.Entry<Integer, List<String>> entrySet : WordCount.topics.entrySet()) {
+//            System.out.println("Topic " + entrySet.getKey() + ": "  + Arrays.toString(entrySet.getValue().toArray()));
+//        }
 
         //TODO FOR EACH DOCUMENT gO THROUGH EACH WORD
         //AND FIND p(topic t | document d): the proportion of words in document d that are assigned to topic t
         //( #words in d with t +alpha/ #words in d with any topic+ k*alpha)
-        // int update1 = (similarWordCount + topicAlpha) / nonSimilarWordCount + 5*topicAlpha
+//        int similarWordCount = 0;
+//        int nonSimilarWordCount = 0;
+//            for (Map.Entry<Integer,List<String>> entrySet : WordCount.topics.entrySet()) {
+//                for (String wordd : document) {
+//
+//                    if (entrySet.getValue().contains(wordd)) {
+//                    similarWordCount++;
+//                    }
+//                    else {
+//                        nonSimilarWordCount++;
+//                    }
+//                }
+//                double update1 = (similarWordCount + WordCount.topicAlpha) / nonSimilarWordCount + (5*WordCount.topicAlpha);
+//                // int update1 = (similarWordCount + topicAlpha) / nonSimilarWordCount + 5*topicAlpha
+//                System.out.println("for topic " + entrySet.getKey() + ", the update is " + update1);
+//            }
+
 
         //AND FIND p(word w| topic t): the proportion of assignments to topic t over all documents that come from this word w.
         //p(word w with topic t) = p(topic t | document d) * p(word w | topic t)
