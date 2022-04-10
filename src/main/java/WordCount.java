@@ -1,58 +1,60 @@
-import java.io.IOException;
-import java.util.StringTokenizer;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.*;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.chain.ChainMapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.log4j.BasicConfigurator;
 
 public class WordCount {
-    public static class TokenizerMapper
-            extends Mapper<Object, Text, Text, IntWritable> {
 
-        private final static IntWritable one = new IntWritable(1);
-        private final Text word = new Text();
+    public static List<String> stopwords = new ArrayList<String>();
+    public static List<String> dict = new ArrayList<String>();
+    public static List<List<String>> documents = new ArrayList<List<String>>();
 
-        public void map(Object key, Text value, Context context
-        ) throws IOException, InterruptedException {
-            StringTokenizer itr = new StringTokenizer(value.toString());
-            while (itr.hasMoreTokens()) {
-                word.set(itr.nextToken());
-                context.write(word, one);
-            }
-        }
-    }
+    public static HashMap<Integer,List<String>> topics = new HashMap<Integer, List<String>>();
 
-    public static class IntSumReducer
-            extends Reducer<Text, IntWritable, Text, IntWritable> {
-        private IntWritable result = new IntWritable();
-
-        public void reduce(Text key, Iterable<IntWritable> values,
-                           Context context
-        ) throws IOException, InterruptedException {
-            int sum = 0;
-            for (IntWritable val : values) {
-                sum += val.get();
-            }
-            result.set(sum);
-            context.write(key, result);
-        }
-    }
+    public static double topicAlpha = 0.;
 
     public static void main(String[] args) throws Exception {
-        BasicConfigurator.configure();
+        //BasicConfigurator.configure();
+        System.out.println("Loading stopwords");
+        File f = new File("configs/stopwords.txt");
+        BufferedReader br = new BufferedReader(new FileReader(f));
+        String sw;
+        while ((sw = br.readLine()) != null) {
+            stopwords.add(sw);
+        }
+
+        System.out.println("Loading Dictionary");
+        File f2 = new File("configs/words_alpha.txt");
+        BufferedReader br2 = new BufferedReader(new FileReader(f2));
+        String sw2;
+        while ((sw2 = br2.readLine()) != null) {
+            dict.add(sw2);
+        }
+
+        System.out.println("Loaded " + dict.size() + " dictionary words");
 
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "word count");
         job.setJarByClass(WordCount.class);
-        job.setMapperClass(WordExtractorMapper.class);
+
+        //first cleanse the words and put them in the bag of words
+        Configuration weConf = new Configuration(false);
+        Configuration swConf = new Configuration(false);
+        ChainMapper.addMapper(job, WordExtractorMapper.class, LongWritable.class, Text.class, Text.class, LongWritable.class, weConf);
+        //ChainMapper.addMapper(job, TopicAssignerMapper.class,Text.class, LongWritable.class, Text.class, LongWritable.class, swConf);
+
+
+
+        job.setMapperClass(ChainMapper.class);
         job.setCombinerClass(WordExtractorReducer.class);
         job.setReducerClass(WordExtractorReducer.class);
 
@@ -60,6 +62,13 @@ public class WordCount {
         job.setOutputValueClass(LongWritable.class);
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
+
+        for (List<String> doc : documents)
+            System.out.println(Arrays.toString(doc.toArray()));
+
+
+
+
         System.exit(job.waitForCompletion(true) ? 0 : 1);
     }
 }
