@@ -1,3 +1,5 @@
+import opennlp.tools.stemmer.PorterStemmer;
+import opennlp.tools.stemmer.Stemmer;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -47,8 +49,10 @@ public class WordExtractorMapper extends Mapper<LongWritable, Text, Text, LongWr
             if (!WordCount.dict.contains(w)) {
                 continue;
             }
-            document.add(w);
 
+            PorterStemmer stem = new PorterStemmer();
+            String result = stem.stem(w);
+            document.add(result);
 
         }
 

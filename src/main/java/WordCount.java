@@ -98,10 +98,7 @@ public class WordCount {
         // Begin by importing documents from text to feature sequences
         ArrayList<Pipe> pipeList = new ArrayList<Pipe>();
 
-        // Pipes: lowercase, tokenize, remove stopwords, map to features
-//        pipeList.add( new CharSequenceLowercase() );
         pipeList.add( new CharSequence2TokenSequence(Pattern.compile("\\p{L}[\\p{L}\\p{P}]+\\p{L}")) );
-//        pipeList.add( new TokenSequenceRemoveStopwords(new File("configs/stopwords.txt"), "UTF-8", false, false, false) );
         pipeList.add( new TokenSequence2FeatureSequence() );
 
         InstanceList instances = new InstanceList (new SerialPipes(pipeList));
@@ -110,10 +107,7 @@ public class WordCount {
         instances.addThruPipe(new CsvIterator(fileReader, Pattern.compile("^(\\S*)[\\s,]*(\\S*)[\\s,]*(.*)$"),
                 3, 2, 1)); // data, label, name fields
 
-        // Create a model with 100 topics, alpha_t = 0.01, beta_w = 0.01
-        //  Note that the first parameter is passed as the sum over topics, while
-        //  the second is
-        int numTopics = 100;
+        int numTopics = 50;
         ParallelTopicModel model = new ParallelTopicModel(numTopics, 1.0, 0.01);
 
         model.addInstances(instances);
@@ -121,13 +115,9 @@ public class WordCount {
         // Use two parallel samplers, which each look at one half the corpus and combine
         //  statistics after every iteration.
         model.setNumThreads(2);
-
-        // Run the model for 50 iterations and stop (this is for testing only,
-        //  for real applications, use 1000 to 2000 iterations)
-        model.setNumIterations(50);
+        model.setNumIterations(500);
         model.estimate();
 
-        // Show the words and topics in the first instance
 
         // The data alphabet maps word IDs to strings
         Alphabet dataAlphabet = instances.getDataAlphabet();
@@ -164,7 +154,7 @@ public class WordCount {
                 rank++;
             }
             writer.println("Topic " + out);
-            System.out.println("my final out is " + out);
+            System.out.println("Topic " + out);
         }
         writer.close();
         // Create a new instance with high probability of topic 0
